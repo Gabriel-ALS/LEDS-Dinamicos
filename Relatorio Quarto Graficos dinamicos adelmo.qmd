@@ -1,0 +1,154 @@
+---
+title: "Relatório Gráficos dinâmicos Tips"
+author: "Gabriel Augusto L. Silva & Beatriz L. Silveira"
+format: html
+editor: visual
+---
+
+## Introdução
+
+Neste relatório, introduziremos de maneira básica o pacote **gganimate** e demonstraremos métodos de criação de *gráficos dinâmicos*. Esses gráficos ilustrarão a evolução dos casos de AIDS em relação a diferentes gêneros e sexos de nascimento ao longo do período de 2014 a 2023 no **Espiríto Santo**.
+
+## Gganimate
+
+O *gganimate* é um pacote gratuito disponível para programação em R, cuja principal função é permitir a *criação de animações que mostram a evolução das informações ao longo do tempo*, estilo, era ou qualquer outra variável relevante. Para mais informações, acesse o site oficial do pacote <https://gganimate.com>.
+
+## Gráfico de Barras
+
+Neste exemplo, demonstraremos de maneira simples como utilizar o pacote gganimate para criar gráficos dinâmicos.
+
+É importante ressaltar que, além do **gganimate**, utilizaremos o pacote **ggplot2**. Um conhecimento prévio sobre a criação de gráficos com o ggplot2 é essencial, pois ele será a base para a preparação dos nossos gráficos antes de convertê-los em GIFs animados.
+
+Leia sobre **ggplot2** em <https://ggplot2.tidyverse.org>.
+
+```{r librarys, echo=FALSE, warning= FALSE, message=FALSE}
+library(readr)
+library(ggplot2)
+library(gganimate)
+library(RColorBrewer)
+library(tidyverse)
+```
+
+```{r barplot, echo=TRUE, warning=FALSE}
+#Importando banco de dados
+
+dados <- read.csv("aids14a23.csv", sep = ";",dec=".") 
+
+view(dados)
+
+#Organizando e categorizando as variaveis
+
+dados$ANT_REL_CA <- factor(dados$ANT_REL_CA)
+
+dados <- dados %>%
+  mutate(ANT_REL_CA = recode(ANT_REL_CA,
+         "10" = "Homossexual",
+         "20" = "Bissexual",
+         "30" = "Heterossexual"
+         ))
+dados <- dados %>%
+  mutate(CS_SEXO = recode(CS_SEXO,
+         "F" = "Feminino",
+         "M" = "Masculino",
+                             
+  ))
+
+#Criando o gráfico por ggplot2
+
+ggplot(dados, aes(x= ANT_REL_CA, fill = CS_SEXO)) + 
+  geom_bar(width = 0.5, position = position_dodge() ) +
+  labs(title = "Total de infectados por genero (Ano: {closest_state})",
+       x = "Genero", y = "Quantidade de observações",
+       fill = "Sexo de nascimento")  +
+  theme( plot.title = element_text(hjust = 0.5),
+         axis.text.x = element_text(size = 10),
+         panel.grid.major = element_line(size = 0.5,
+                                         color = "lightblue",
+                                         linetype = "dashed"),
+         
+         panel.grid.minor = element_line(size = 0.5,
+                                         color = "lightblue",
+                                         linetype = "dashed")) +
+  scale_fill_manual(values = c("#1ab2a3","#046434")) +
+ 
+#Parte do gganimate
+  transition_states(
+    dados$NU_ANO,
+    transition_length = 5,
+    state_length = 5
+  )
+
+anim_save("grafico de infectados por genero.gif")
+```
+
+Acima mostramos todo o codigo para a criação deste **GIF**, vamos observar abaixo o trecho especifico do **gganimate**:
+
+```{r gganimate 1, echo=TRUE, warning=FALSE, eval=FALSE}
+#Parte do gganimate
+  transition_states(
+    dados$NU_ANO,
+    transition_length = 5,
+    state_length = 5
+  )
+
+anim_save("grafico de infectados por genero.gif")
+```
+
+Este trecho é tudo que precisamos do gganimate para criar a animação acima, neste caso utilizamos a função **transition_states()** pois com ela podemos controlar melhor a velocidade que os frames são passados e quanto tempo se mantem em cada frame.
+
+O processo é:
+
+1.  Chamamos a variavel tempo, neste caso **dados_NU_ANO.**
+2.  especificamos a velocidade de transição com o **transition_length =.**
+3.  especificamos o tempo em que o frame ira se manter antes de transicionar para o proximo com **state_length =.**
+4.  O ultimo passo é a função **anim_save** para salvar o **GIF** com o nome que desejar.
+
+A questão de ajuste de velocidade de frames e transições é algo que não tem muito um valor ideal, vá ajustando manualmente até alcançar um resultado que te agrade.
+
+Bem simples não?
+
+Abaixo segue outro exemplo que segue os mesmos principios de cima, apenas ajustado o gráfico no **ggplot2**
+
+```{r barplot 2, echo=FALSE, warning=FALSE}
+dados <- read.csv("aids14a23.csv", sep = ";",dec=".")
+
+view(dados)
+
+dados$ANTRELSE_N <- factor(dados$ANTRELSE_N)
+
+dados <- dados %>%
+  mutate(ANTRELSE_N = recode(ANTRELSE_N,
+                             "1" = "Homens",
+                             "2" = "Mulheres",
+                             "3" = "Ambos"
+  ))
+
+#Criando o gráfico por ggplot2
+ggplot(dados, aes(x= ANTRELSE_N, fill = ANTRELSE_N)) + 
+  geom_bar(position=position_dodge(0.5) ) +
+  labs(title = "Total de infectados por relação (Ano: {closest_state})",
+       x = "", y = "Quantidade relatada",
+       fill = "Sexo dos(as) parceiros(as)")  +
+  theme( plot.title = element_text(hjust = 0.5),
+         axis.text.x = element_text(size = 12),
+         panel.grid.major = element_line(size = 0.5,
+                                         color = "lightblue",
+                                         linetype = "dashed"),
+         
+         panel.grid.minor = element_line(size = 0.5,
+                                         color = "lightblue",
+                                         linetype = "dashed") 
+  ) +
+  scale_fill_manual(values = c("#146cb4","#1ab2a3","#046434")) +
+  
+  
+  #Parte do gganimate
+  transition_states(
+    dados$NU_ANO,
+    transition_length = 10,
+    state_length = 1
+  )
+
+anim_save("grafico quantidade X tipo relação.gif")
+
+```
