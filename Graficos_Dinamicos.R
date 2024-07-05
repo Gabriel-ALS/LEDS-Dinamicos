@@ -1,10 +1,11 @@
+
 library(readr)
 library(ggplot2)
 library(gganimate)
 library(tidyverse)
 library(RColorBrewer)
 
-# Gráficos de barras Horizontal dinâmicos
+# Gráficos de barras 1
 #####
 
 #Preparando o banco
@@ -55,7 +56,7 @@ anim_save("grafico de infectados por genero.gif")
 
 
 #####
-# Gráficos de barras Vertical dinâmicos 
+# Gráficos de barras 2
 #####
 
 #Preparando o banco
@@ -100,19 +101,4 @@ ggplot(dados, aes(x= ANTRELSE_N, fill = ANTRELSE_N)) +
 
 anim_save("grafico quantidade X tipo relação.gif")
 ##### 
-
-
-
-
-
-
-
-
-   
-
-
-   
-  
-
-
 #####
