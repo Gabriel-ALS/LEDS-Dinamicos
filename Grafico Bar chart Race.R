@@ -2,6 +2,7 @@ library(ggplot2)
 library(tidyverse)
 library(gganimate)
 
+
 #Importar o banco de dados
 pib_mundo <- read.csv2("countries_gdp_hist.csv")
 
@@ -32,38 +33,44 @@ america_do_sul$total_gdp_million <- as.numeric((america_do_sul$total_gdp_million
 america_do_sul <- america_do_sul %>%
   arrange(year, desc(total_gdp_million)) %>%
   group_by(year) %>%
-  mutate(rank = factor(row_number(), levels = 1:length(country_name)))
+  mutate(rank = factor(row_number())) %>%
+  ungroup()
+
+america_do_sul$rank <-  as.numeric(america_do_sul$rank)
 
 #Criar o grafico no GGplot2
 
-grafico <- ggplot(america_do_sul, aes(x= reorder(country_name, total_gdp_million),
+grafico <- ggplot(america_do_sul, aes(x= -rank,
                                       y = total_gdp_million,
                                       fill = country_name)) + 
   geom_bar(stat = "identity") +
-  coord_flip() +
-  labs(title = "PIB do Pais em: {closest_state}",
-       x = "Pais", y = "Milhões",
+  coord_flip(clip = "off") +
+  geom_text(aes(y = 0, label = paste(country_name, " ")),
+            vjust = 0.2, hjust = 1, size = 3)+
+  labs(title = "PIB do País em: {closest_state}",
+       x = "", y = "Milhões",
        fill = "") +
   theme( plot.title = element_text(hjust = 0.5),
-         axis.text.x = element_text(size = 10),
          panel.grid.major = element_line(size = 0.5,
                                          color = "lightblue",
                                          linetype = "blank"),
          
          panel.grid.minor = element_line(size = 0.5,
                                          color = "lightblue",
-                                         linetype = "blank")) +
+                                         linetype = "blank",
+                                         )
+         ) +
   scale_fill_viridis_d(option = "viridis") +
   theme_minimal() +
-# O gráfico não está alterando de colocação os paises com maior e menor PIB
-#quando joga para o gganimate animar
-transition_states(
-  america_do_sul$year,
-  transition_length = 5,
-  state_length = 5
-)
+transition_states(year,
+  state_length = 5,
+  transition_length = 2
+) +
+  view_follow(fixed_x = TRUE) +
 
-grafico
+  ease_aes('linear')
+
+animate(grafico, nframes = 122, renderer = gifski_renderer(),fps = 5)
 
 anim_save("PIB.gif")
 
